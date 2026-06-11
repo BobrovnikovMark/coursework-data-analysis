@@ -274,4 +274,4 @@ plt.close()
 print('Saved: fig7_noise.png')
 
 print()
-print('ВСЕ ГРАФИКИ СГЕНЕРИРОВАНЫ НА РУССКОМ ЯЗЫКЕ!')
+
