@@ -72,39 +72,54 @@ plt.close()
 print('Saved: fig1_histograms.png')
 
 # ============================================================
-# 2a. Scatter: Кол-во vs Медианный доход (по полу)
+# 2a. Сравнение мужчин и женщин по направлениям подготовки
 # ============================================================
 sex_ru = {'Male': 'Мужчины', 'Female': 'Женщины'}
 df['Пол'] = df['Sex'].map(sex_ru)
 
-fig, ax = plt.subplots(figsize=(10, 6))
-sns.scatterplot(data=df, x='Median_Income', y='Count', hue='Пол', alpha=0.5, ax=ax,
-                palette={'Мужчины': '#3498DB', 'Женщины': '#E74C3C'})
-ax.set_title('Кол-во обладателей степени и медианный доход (по полу)', fontsize=13, fontweight='bold')
-ax.set_xlabel('Медианный доход ($)')
-ax.set_ylabel('Кол-во обладателей степени')
-ax.grid(True, alpha=0.3)
-plt.tight_layout()
-plt.savefig(os.path.join(PLOT_DIR, 'fig2a_scatter_income_count.png'), dpi=150)
-plt.close()
-print('Saved: fig2a_scatter_income_count.png')
-
-# ============================================================
-# 2b. Scatter: Доля бакалавров vs Занятость (по возрасту)
-# ============================================================
 age_ru = {'25 to 34': '25–34', '35 to 44': '35–44', '45 to 64': '45–64', '65 and over': '65+'}
 df['Возраст'] = df['Age_Group'].map(age_ru)
 
-fig, ax = plt.subplots(figsize=(10, 6))
-sns.scatterplot(data=df, x='Percent_With_Bachelors', y='Employment_Rate', hue='Возраст', alpha=0.5, ax=ax)
-ax.set_title('Доля с бакалавром и уровень занятости (по возрасту)', fontsize=13, fontweight='bold')
-ax.set_xlabel('Доля с бакалавром (%)')
-ax.set_ylabel('Уровень занятости (%)')
-ax.grid(True, alpha=0.3)
+sex_major = df.groupby(['Major_RU', 'Пол'])['Count'].sum().unstack(fill_value=0)
+sex_major = sex_major.sort_values('Мужчины', ascending=True)
+
+fig, ax = plt.subplots(figsize=(12, 7))
+y_pos = np.arange(len(sex_major))
+h = 0.35
+ax.barh(y_pos - h/2, sex_major['Мужчины'], h, label='Мужчины', color='#3498DB', alpha=0.85)
+ax.barh(y_pos + h/2, sex_major['Женщины'], h, label='Женщины', color='#E74C3C', alpha=0.85)
+ax.set_yticks(y_pos)
+ax.set_yticklabels(sex_major.index, fontsize=10)
+ax.set_xlabel('Общее количество обладателей степени', fontsize=11)
+ax.set_title('Сравнение мужчин и женщин по направлениям подготовки', fontsize=13, fontweight='bold')
+ax.legend(fontsize=11)
+ax.grid(True, alpha=0.3, axis='x')
 plt.tight_layout()
-plt.savefig(os.path.join(PLOT_DIR, 'fig2b_scatter_bachelors_employment.png'), dpi=150)
+plt.savefig(os.path.join(PLOT_DIR, 'fig2a_sex_by_major.png'), dpi=150)
 plt.close()
-print('Saved: fig2b_scatter_bachelors_employment.png')
+print('Saved: fig2a_sex_by_major.png')
+
+# ============================================================
+# 2b. Распределение возрастных групп по направлениям (стек)
+# ============================================================
+age_major = df.groupby(['Major_RU', 'Возраст'])['Count'].sum().unstack(fill_value=0)
+age_order = ['25–34', '35–44', '45–64', '65+']
+age_major = age_major[age_order]
+age_major = age_major.loc[age_major.sum(axis=1).sort_values(ascending=False).index]
+
+fig, ax = plt.subplots(figsize=(14, 7))
+colors_age = ['#2ECC71', '#F39C12', '#9B59B6', '#1ABC9C']
+age_major.plot(kind='bar', stacked=True, ax=ax, color=colors_age, edgecolor='white', linewidth=0.5)
+ax.set_title('Распределение обладателей степени по возрасту и направлению', fontsize=13, fontweight='bold')
+ax.set_xlabel('Направление подготовки', fontsize=11)
+ax.set_ylabel('Общее количество', fontsize=11)
+ax.legend(title='Возраст', fontsize=10, title_fontsize=11)
+plt.xticks(rotation=40, ha='right', fontsize=9)
+ax.grid(True, alpha=0.3, axis='y')
+plt.tight_layout()
+plt.savefig(os.path.join(PLOT_DIR, 'fig2b_age_by_major.png'), dpi=150)
+plt.close()
+print('Saved: fig2b_age_by_major.png')
 
 # ============================================================
 # 2c. Boxplot по направлениям
@@ -274,4 +289,4 @@ plt.close()
 print('Saved: fig7_noise.png')
 
 print()
-
+print('ВСЕ ГРАФИКИ СГЕНЕРИРОВАНЫ НА РУССКОМ ЯЗЫКЕ!')
